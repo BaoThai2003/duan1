@@ -1,0 +1,105 @@
+<?php
+session_start();
+
+// Thông tin sách (cứng, bạn có thể lấy từ cơ sở dữ liệu hoặc truyền qua tham số)
+$book = [
+    'title' => 'Lập trình web PHP',
+    'year' => 2025,
+    'authors' => 'Bảo Bùi, Nghi Đỗ'
+];
+
+// Khởi tạo mảng đánh giá nếu chưa tồn tại
+if (!isset($_SESSION['reviews'])) {
+    $_SESSION['reviews'] = [
+        ['name' => 'Đánh giá sách', 'email' => 'bob@example.com', 'rating' => 5, 'comment' => '']
+    ];
+}
+
+// Xử lý khi form được gửi
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name = $_POST['name'];
+    $email = $_POST['email'] ?? '';
+    $rating = $_POST['rating'];
+    $comment = $_POST['comment'] ?? '';
+
+    // Thêm đánh giá vào mảng
+    $review = [
+        'name' => $name,
+        'email' => $email,
+        'rating' => $rating,
+        'comment' => $comment
+    ];
+    $_SESSION['reviews'][] = $review;
+}
+?>
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh giá sách</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        label { display: block; margin: 10px 0 5px; }
+        input, select, textarea { width: 100%; max-width: 300px; padding: 5px; }
+        input[type="submit"] { width: auto; margin-top: 10px; background-color: #4CAF50; color: white; border: none; padding: 10px; cursor: pointer; }
+        h1, h2 { color: #333; }
+        h6 { font-size: 12px; color: #666; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1><?php echo htmlspecialchars($book['title']); ?> (<?php echo htmlspecialchars($book['year']); ?>)</h1>
+    <p>Tác giả: <?php echo htmlspecialchars($book['authors']); ?></p>
+
+    <h2>Đánh giá</h2>
+    <?php
+    if (!empty($_SESSION['reviews'])) {
+        echo "<ul>";
+        foreach ($_SESSION['reviews'] as $review) {
+            echo "<li>";
+            echo "<strong>" . htmlspecialchars($review['name']) . "</strong>";
+            if (!empty($review['email'])) {
+                echo " (" . htmlspecialchars($review['email']) . ")";
+            }
+            echo " - Đánh giá: " . htmlspecialchars($review['rating']) . "/5";
+            if (!empty($review['comment'])) {
+                echo "<br>" . htmlspecialchars($review['comment']);
+            }
+            echo "</li>";
+        }
+        echo "</ul>";
+    } else {
+        echo "<p>Chưa có đánh giá nào.</p>";
+    }
+    ?>
+
+    <h2>Thêm đánh giá mới</h2>
+    <form method="POST">
+        <label>Tên của bạn:</label>
+        <input type="text" name="name" required>
+
+        <label>Email (không bắt buộc):</label>
+        <input type="email" name="email">
+
+        <label for="rating">Đánh giá:</label>
+        <select name="rating" required>
+            <option value="">Chọn đánh giá</option>
+            <option value="1">1 sao</option>
+            <option value="2">2 sao</option>
+            <option value="3">3 sao</option>
+            <option value="4">4 sao</option>
+            <option value="5">5 sao</option>
+        </select>
+
+        <label>Nhận xét (không bắt buộc):</label>
+        <textarea name="comment" rows="4"></textarea>
+
+        <input type="submit" value="Gửi đánh giá">
+    </form>
+
+    <h6>Thực hiện bởi: Vương Huỳnh Thái Bảo - DC21V7N504</h6>
+</body>
+</html>
