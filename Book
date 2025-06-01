@@ -1,0 +1,82 @@
+<?php
+session_start();
+
+// Khởi tạo mảng sách và đánh giá nếu chưa tồn tại
+if (!isset($_SESSION['books'])) {
+    $_SESSION['books'] = [];
+}
+if (!isset($_SESSION['reviews'])) {
+    $_SESSION['reviews'] = [];
+}
+
+// Xử lý tìm kiếm
+$search_query = isset($_GET['search']) ? strtolower(trim($_GET['search'])) : '';
+$filtered_books = $_SESSION['books'];
+
+if ($search_query) {
+    $filtered_books = array_filter($_SESSION['books'], function($book) use ($search_query) {
+        return strpos(strtolower($book['title']), $search_query) !== false;
+    });
+}
+?>
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách sách</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        form { margin-bottom: 20px; }
+        input[type="text"] { padding: 5px; width: 200px; }
+        input[type="submit"] { padding: 5px 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        h6 { font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>Danh sách sách</h1>
+
+    <form method="GET">
+        <input type="text" name="search" placeholder="Tìm kiếm sách" value="<?php echo htmlspecialchars($search_query); ?>">
+        <input type="submit" value="Tìm kiếm">
+    </form>
+
+    <table>
+        <tr>
+            <th>Tên sách</th>
+            <th>Tác giả</th>
+            <th>Đánh giá trung bình</th>
+            <th>Số lượng đánh giá</th>
+        </tr>
+        <?php
+        foreach ($filtered_books as $index => $book) {
+            // Lọc đánh giá theo sách (giả sử có cách nhận diện sách, ví dụ index)
+            $book_reviews = array_filter($_SESSION['reviews'], function($review) use ($index) {
+                return array_key_exists('book_index', $review) && $review['book_index'] == $index;
+            });
+
+            $total_rating = 0;
+            $review_count = count($book_reviews);
+            foreach ($book_reviews as $review) {
+                $total_rating += $review['rating'];
+            }
+            $average_rating = $review_count > 0 ? number_format($total_rating / $review_count, 1) : 0;
+
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($book['title']) . "</td>";
+            echo "<td>" . htmlspecialchars($book['authors']) . "</td>";
+            echo "<td>" . htmlspecialchars($average_rating) . "/5</td>";
+            echo "<td>" . htmlspecialchars($review_count) . "</td>";
+            echo "</tr>";
+        }
+        ?>
+    </table>
+
+    <h6>Thực hiện bởi: Vương Huỳnh Thái Bảo - DC21V7N504</h6>
+</body>
+</html>
